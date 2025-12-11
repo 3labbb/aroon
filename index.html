@@ -38,10 +38,8 @@
         </nav>
         <input type="text" name="user-input" id="userInput" value="" />
       </header>
-
       <main>
         <div class="test-config-result">
-          <!-- config + results -->
           <div class="test-config">
             <div class="config" id="config1">
               <div class="button">
@@ -67,9 +65,7 @@
                 >
               </div>
             </div>
-
             <div class="spelter"></div>
-
             <div class="config" id="config2">
               <div class="button">
                 <input
@@ -82,20 +78,29 @@
                 <label for="time"><i class="fa-solid fa-clock"></i> time</label>
               </div>
               <div class="button">
-                <input
-                  type="radio"
-                  id="words"
-                  name="test-by"
-                  value="words"
-                />
-                <label for="words"
-                  ><i class="fa-solid fa-a"></i> words</label
+                <input type="radio" id="words" name="test-by" value="words" />
+                <label for="words"><i class="fa-solid fa-a"></i> words</label>
+              </div>
+              <div class="button">
+                <input type="radio" id="quote" name="test-by" value="quote" />
+                <label for="quote"
+                  ><i class="fas fa-fw fa-quote-left"></i> quote</label
+                >
+              </div>
+              <div class="button">
+                <input type="radio" id="zen" name="test-by" value="zen" />
+                <label for="zen"
+                  ><i class="fas fa-fw fa-mountain"></i> zen</label
+                >
+              </div>
+              <div class="button">
+                <input type="radio" id="custom" name="test-by" value="custom" />
+                <label for="custom"
+                  ><i class="fas fa-fw fa-wrench"></i> custom</label
                 >
               </div>
             </div>
-
             <div class="spelter"></div>
-
             <div class="config" id="config3">
               <div class="time-word-config">
                 <input
@@ -104,7 +109,7 @@
                   name="time-word-config"
                   value="15"
                 />
-                <label for="15">15s</label>
+                <label for="15">15</label>
               </div>
               <div class="time-word-config">
                 <input
@@ -113,7 +118,7 @@
                   name="time-word-config"
                   value="30"
                 />
-                <label for="30">30s</label>
+                <label for="30">30</label>
               </div>
               <div class="time-word-config">
                 <input
@@ -123,76 +128,149 @@
                   value="60"
                   checked
                 />
-                <label for="60">60s</label>
+                <label for="60">60</label>
+              </div>
+              <div class="time-word-config">
+                <input
+                  type="radio"
+                  id="100"
+                  name="time-word-config"
+                  value="100"
+                />
+                <label for="100">120</label>
               </div>
             </div>
-
             <div class="textButton" id="tools">
               <i class="fas fa-fw fa-tools"></i>
             </div>
           </div>
-
-          <!-- result panel -->
           <div class="test-results">
             <div class="col">
               <div class="result big-text">
                 <span class="result-head">WPM</span>
-                <span class="result-value wpm"></span>
+                <span class="result-value wpm">43</span>
               </div>
+
               <div class="result big-text">
-                <span class="result-head">Accuracy</span>
-                <span class="result-value acc"></span>
+                <span class="result-head">acc</span>
+                <span class="result-value acc">96%</span>
               </div>
             </div>
             <div class="col">
               <div class="result">
-                <span class="result-head">Test Type</span>
-                <span class="result-value test-type"></span>
+                <span class="result-head">test type</span>
+                <span class="result-value test-type"> </span>
               </div>
               <div class="result">
-                <span class="result-head">Finished Time</span>
-                <span class="result-value time"></span>
+                <span class="result-head">finished time</span>
+                <span class="result-value time">0:15</span>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="typing-test">
-          <!-- here is where live WPM & test info show -->
-          <div class="time-word-info">
-            <!-- your script will inject "Live WPM: x" here -->
+        <div id="testModesNotice">
+          <div class="textButton" commands="languages">
+            <i class="fas fa-globe-americas"> </i>
+            english
           </div>
-
+        </div>
+        <div class="typing-test">
+          <div class="time-word-info"></div>
           <div class="test shadow">
             <div class="overlay">
               <i class="fa-solid fa-arrow-pointer"></i>
               Click here or press any key to focus
             </div>
-
             <div class="starting-text">
               lipsum dolor sit amet consectetur adipisicing elit. Dolor ipsum
               deserunt recusandae voluptatem accusamus quo quisquam cum, sunt,
               ullam quos laudantium velit, at atque! Voluptates animi ratione
               similique velit facilis.
             </div>
-
             <div class="test-text"></div>
           </div>
+          <!-- <button id="restartTestButton" class="text">
+            <i class="fas fa-fw fa-redo-alt"></i>
+          </button> -->
         </div>
       </main>
 
       <!-- FOOTER -->
       <footer>
+        <div id="commandLineMobileButton">
+          <i class="fas fa-terminal"></i>
+        </div>
         <div class="keyTips">
           <key>tab</key> + <key>enter</key> - restart test
           <br />
           <key>esc</key> or <key>ctrl</key> + <key>shift</key> + <key>p</key> -
           command line
         </div>
+        <div class="leftright">
+          <div class="left">
+            <button class="textButton">
+              <i class="fas fa-fw fa-envelope"></i>
+              <div class="text">Contact</div>
+            </button>
+            <button class="textButton">
+              <i class="fas fa-fw fa-donate"></i>
+              <div class="text">Support</div>
+            </button>
+            <a
+              href="https://github.com/monkeytypegame/monkeytype"
+              class="textButton"
+              target="_blank"
+            >
+              <i class="fas fa-fw fa-code"></i>
+              <div class="text">GitHub</div>
+            </a>
+            <a
+              href="https://www.discord.gg/monkeytype"
+              class="textButton"
+              target="_blank"
+            >
+              <i class="fab fa-fw fa-discord"></i>
+              <div class="text">Discord</div>
+            </a>
+            <a
+              href="https://twitter.com/monkeytypegame"
+              class="textButton"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i class="fab fa-fw fa-twitter"></i>
+              <div class="text">Twitter</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-file-contract"></i>
+              <div class="text">Terms</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-shield-alt"></i>
+              <div class="text">Security</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-lock"></i>
+              <div class="text">Privacy</div>
+            </a>
+          </div>
+          <div class="right">
+            <button
+              class="textButton"
+              id="light-mode-toggle"
+              data-balloon-pos="left"
+            >
+              <i class="fas fa-fw fa-palette"></i>
+              <div class="text" id="theme-text">serika dark</div>
+            </button>
+            <button class="textButton">
+              <i class="fas fa-fw fa-code-branch"></i>
+              <div class="text">v24.9.0</div>
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
-
-    <!-- your scripts -->
     <script src="./assets/js/script.js"></script>
     <script src="./assets/js/app.js" type="module"></script>
     <script src="./assets/js/test.js" type="module"></script>
