@@ -84,6 +84,16 @@ header .logo h1 {
     font-weight: 550;
 }
 
+header .logo h1::before {
+    content: ' monkey see';
+    font-size: 10px;
+    position: absolute;
+    padding-left: 5px;
+    word-spacing: -1px;
+    letter-spacing: 0;
+    font-family: Lexend Deca, sans-serif;
+    color: var(--text-alt-color);
+}
 
 nav{
     font-size: 1rem;
