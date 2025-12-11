@@ -6,12 +6,12 @@ toggleModeInput.addEventListener("click", (e) => {
     document.body.classList.add("light-mode");
     localStorage.setItem("lightMode", true);
     logoImage.src = "assets/img/logo-light-mode.svg";
-    document.querySelector("#theme-text").innerText = "serika";
+    document.querySelector("#theme-text").innerText = "Dark";
   } else {
     document.body.classList.remove("light-mode");
     localStorage.setItem("lightMode", false);
     logoImage.src = "assets/img/logo.svg";
-    document.querySelector("#theme-text").innerText = "serika dark";
+    document.querySelector("#theme-text").innerText = "White";
   }
 });
 
