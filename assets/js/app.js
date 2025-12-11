@@ -23,6 +23,7 @@ let startDuration, endDuration, duration;
 let numberOfWords = 0;
 let allowUserInput = true;
 let testStarted = false;
+let testParagraphWords = []; // paragraph words
 
 startBtn.addEventListener("click", () => {
   if (!testStarted) {
@@ -32,7 +33,10 @@ startBtn.addEventListener("click", () => {
   allowUserInput = true;
 });
 
-typingTest.addEventListener("click", () => {
+typingTest.addEventListener("click", async () => {
+  // load paragraph from backend
+  await loadParagraphFromBackend();
+
   initTest();
   setUpUserInput();
   setDuration();
@@ -43,6 +47,77 @@ typingTest.addEventListener("click", () => {
 
 userInput.addEventListener("blur", () => allowUserInput && userInput.focus());
 userInput.addEventListener("input", startTest);
+
+async function loadParagraphFromBackend() {
+  try {
+    const res = await fetch("./assets/backend.json");
+    const data = await res.json();
+
+    if (!data.paragraphs || !Array.isArray(data.paragraphs) || data.paragraphs.length === 0) {
+      console.error("No paragraphs found in backend.json");
+      testParagraphWords = [];
+      return;
+    }
+
+    // pick a random paragraph
+    const randomIndex = Math.floor(Math.random() * data.paragraphs.length);
+    const paragraphText = data.paragraphs[randomIndex];
+
+    testParagraphWords = paragraphText.split(" ");
+  } catch (err) {
+    console.error("Error loading paragraph:", err);
+    testParagraphWords = [];
+  }
+}
+
+function initTest() {
+  testConfiguration.classList.add("hide");
+  testResult.classList.remove("show");
+
+  testInfo.innerHTML = "";
+  testInfo.classList.remove("hide");
+
+  testContainer.classList.remove("shadow");
+  textOverlay.classList.add("hide");
+  startingTextContainer.classList.add("hide");
+
+  typingTest.classList.add("no-click");
+
+  // build the test from the loaded paragraph
+  createWordsFromParagraph();
+}
+
+function createWordsFromParagraph() {
+  testText.innerHTML = "";
+  resetTestWordsAndLetters();
+
+  testParagraphWords.forEach((word, i) => {
+    const wordDiv = document.createElement("div");
+    wordDiv.id = i + 1;
+    wordDiv.className = "word";
+
+    [...word].forEach((letter, j) => {
+      createLetter(letter, wordDiv, i + 1, j + 1);
+    });
+
+    if (i < testParagraphWords.length - 1) {
+      createLetter(" ", wordDiv, i + 1, word.length + 1);
+    }
+
+    testText.appendChild(wordDiv);
+  });
+}
+
+function createLetter(letter, parentContainer, i, j) {
+  const letterSpan = document.createElement("span");
+  letterSpan.innerText = letter;
+  letterSpan.className = "letter";
+  letterSpan.id = `${i}:${j}`;
+  parentContainer.appendChild(letterSpan);
+  testLetters.push(letterSpan);
+}
+
+// Remaining code below is your unchanged logic
 
 function setUpUserInput() {
   userInput.focus();
@@ -60,7 +135,6 @@ function startTest() {
   if (currentIndex < testLetters.length - 1) {
     handleUserInput(this);
     updateNumberOfWords();
-
     if (testConfig["test-by"] === "words") {
       testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
     }
@@ -125,12 +199,10 @@ function updateNumberOfWords() {
 }
 
 function setDuration() {
-  // store the precise start time
   startDuration = Date.now();
 }
 
 function stopDuration() {
-  // calculate total elapsed time in seconds
   endDuration = Date.now();
   duration = Math.floor((endDuration - startDuration) / 1000);
 }
@@ -139,8 +211,6 @@ function showResult() {
   stopDuration();
 
   const [WPM, accuracy] = calculateUserTestResult();
-
-  // properly formatted finished time
   const formattedTime = formatElapsedTime(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
@@ -166,17 +236,14 @@ function calculateUserTestResult() {
 
 function createTestTypeInfo() {
   testTypeResultInfo.innerHTML = "";
-
   const testBySpan = document.createElement("span");
   testBySpan.innerHTML = `test by ${testConfig["test-by"]}`;
   testTypeResultInfo.appendChild(testBySpan);
-
   testConfig["include-to-test"].map((elm) => {
     const span = document.createElement("span");
     span.innerHTML = `include ${elm}`;
     testTypeResultInfo.appendChild(span);
   });
-
   if (testConfig["test-by"] === "words") {
     const numberOfWordsSpan = document.createElement("span");
     numberOfWordsSpan.innerHTML = `test of ${testConfig["time-word-config"]} words`;
@@ -192,7 +259,6 @@ function setTimer(seconds) {
   timer = setInterval(() => {
     let [numberOfMinutes, numberOfSeconds] = handleMinutesAndSeconds(seconds);
     testInfo.innerHTML = `${numberOfMinutes}:${numberOfSeconds}`;
-
     if (--seconds < 0) {
       clearInterval(timer);
       showResult();
@@ -207,7 +273,6 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   return [minutes, seconds];
 }
 
-// helper to format finished time
 function formatElapsedTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -218,13 +283,10 @@ function formatElapsedTime(seconds) {
 function reInitTest() {
   testText.innerHTML = "";
   testConfiguration.classList.remove("hide");
-
   testInfo.classList.add("hide");
-
   testContainer.classList.add("shadow");
   textOverlay.classList.remove("hide");
   startingTextContainer.classList.remove("hide");
-
   typingTest.classList.remove("no-click");
   currentIndex = 0;
   numberOfWords = 0;
@@ -232,10 +294,8 @@ function reInitTest() {
   resetTestWordsAndLetters();
   duration = 0;
   userInput.value = "";
-
   allowUserInput = false;
   userInputLetters = [];
   userInput.blur();
-
   testStarted = false;
 }
