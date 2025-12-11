@@ -11,9 +11,11 @@ window.addEventListener("DOMContentLoaded", setUpTestConfigurationContainer);
 
 function handleTestConfigChange(e) {
   const { name, value } = e.target;
+
   if (name === "test-by") {
     testConfig = { ...testConfig, [name]: value };
   }
+
   if (name === "time-word-config") {
     testConfig = { ...testConfig, [name]: parseInt(value) };
   }
@@ -30,18 +32,19 @@ function handleTestConfigChange(e) {
 
     testConfig = { ...testConfig, [name]: checkedBoxesValue };
   }
+
   setUpTestConfigurationContainer();
 }
 
 function setUpTestConfigurationContainer() {
   const timeWordConfigs = document.querySelectorAll(".time-word-config");
+
   if (testConfig["test-by"] === "time") {
     timeWordConfigs.forEach((elm) => elm.classList.add("time"));
   } else {
     timeWordConfigs.forEach((elm) => elm.classList.remove("time"));
   }
 }
-
 
 const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
@@ -51,12 +54,10 @@ const startingTextContainer = document.querySelector(".starting-text");
 const testResult = document.querySelector(".test-results");
 const testInfo = document.querySelector(".time-word-info");
 
-const punctuation = `+",.-'"&!?:;#~=/$^()_<>`;
-const letters = "abcdefghijklmnopqrstuvwxyz";
-let testWords = [];
 export let testLetters = [];
+let testWords = [];
 
-export function initTest() {
+export async function initTest() {
   testConfiguration.classList.add("hide");
   testResult.classList.remove("show");
 
@@ -68,44 +69,45 @@ export function initTest() {
   startingTextContainer.classList.add("hide");
 
   typingTest.classList.add("no-click");
-  testWords = generateTestText();
 
+  // Load paragraph text from the backend
+  testWords = await generateTestParagraph();
   createWords();
 }
 
-function generateTestText() {
-  const numberOfWords = decideNumberOfWords();
-  const includeToTest = testConfig["include-to-test"];
-  const words = [];
+async function fetchParagraphs() {
+  try {
+    const res = await fetch("./assets/backend.json"); // adjust path if needed
+    const data = await res.json();
 
-  for (let i = 0; i < numberOfWords; i++) {
-    let wordLength = random(8) + 1;
-    let word = "";
-
-    for (let j = 0; j < wordLength; j++) {
-      let randomLetter = letters[random(letters.length)];
-      if (random(8) === 4) {
-        word += randomLetter.toLocaleUpperCase();
-      } else {
-        word += randomLetter;
-      }
+    if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
+      console.error("No paragraphs found in backend.json");
+      return [];
     }
 
-    if (includeToTest.includes("punctuation")) {
-      if (random(8) % 2 === 0) {
-        word += punctuation[random(punctuation.length)];
-      }
-    }
-
-    if (includeToTest.includes("numbers")) {
-      if (random(8) % 2 === 0) {
-        word += " " + random(10);
-      }
-    }
-
-    words.push(word);
+    return data.paragraphs;
+  } catch (err) {
+    console.error("Error loading paragraphs:", err);
+    return [];
   }
-  return words;
+}
+
+async function generateTestParagraph() {
+  const includeToTest = testConfig["include-to-test"];
+  const paragraphs = await fetchParagraphs();
+  if (paragraphs.length === 0) return [];
+
+  let text = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+
+  if (includeToTest.includes("numbers")) {
+    text += " The year is 2025, and typing skills are essential.";
+  }
+
+  if (includeToTest.includes("punctuation")) {
+    text += " Try handling commas, periods, and question marks correctly!";
+  }
+
+  return text.split(" ");
 }
 
 function createLetter(letter, parentContainer, i, j) {
@@ -138,14 +140,10 @@ function createWords() {
 function decideNumberOfWords() {
   return testConfig["test-by"] === "words"
     ? testConfig["time-word-config"]
-    : 40;
+    : testWords.length;
 }
 
-function random(limit) {
-  return Math.floor(Math.random() * limit);
-}
-
-export function resetTestWordsAndLetters(params) {
+export function resetTestWordsAndLetters() {
   testWords = [];
   testLetters = [];
 }
