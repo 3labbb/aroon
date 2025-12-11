@@ -1,4 +1,4 @@
-import { resetTestWordsAndLetters, testLetters, testConfig } from "./test.js";
+import { initTest, resetTestWordsAndLetters, testLetters, testConfig } from "./test.js";
 
 const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
@@ -24,45 +24,32 @@ let numberOfWords = 0;
 let allowUserInput = true;
 let testStarted = false;
 
-// hold the paragraph from backend
-let backendWords = [];
-
 startBtn.addEventListener("click", () => {
   if (!testStarted) {
-    textOverlay.click();
+    typingTest.click();
   }
+
   testStarted = true;
+
   allowUserInput = true;
 });
 
-// start test when clicking overlay or typing area
-textOverlay.addEventListener("click", async () => {
-  if (!testStarted) {
-    await loadParagraphFromBackend();
-    startTypingTest();
-  }
-});
-
-typingTest.addEventListener("click", async () => {
-  if (!testStarted) {
-    await loadParagraphFromBackend();
-    startTypingTest();
-  }
-});
-
-function startTypingTest() {
+typingTest.addEventListener("click", () => {
   initTest();
   setUpUserInput();
   setDuration();
+
   testStarted = true;
   allowUserInput = true;
-}
+});
 
 userInput.addEventListener("blur", () => allowUserInput && userInput.focus());
+
 userInput.addEventListener("input", startTest);
 
 function setUpUserInput() {
   userInput.focus();
+
   testLetters[currentIndex].classList.add("cursor");
 
   if (testConfig["test-by"] === "words") {
@@ -85,11 +72,13 @@ function startTest() {
     clearInterval(timer);
     showResult();
   }
+
   handleCursor();
 }
 
 function handleUserInput(input) {
   userInputLetters = input.value.split("");
+
   const userCurrentLetter = userInputLetters[currentIndex];
   const testCurrentLetter = testLetters[currentIndex].textContent;
 
@@ -128,6 +117,7 @@ function wrongLetter() {
   } else {
     testLetters[currentIndex].classList.add("wrong-space");
   }
+
   wrongLetters.push(testLetters[currentIndex].id);
 }
 
@@ -174,73 +164,8 @@ function calculateUserTestResult() {
 
   const WPM = wpm >= 0 ? wpm : 0;
   const accuracy = acc >= 0 ? acc : 0;
+
   return [WPM, accuracy];
-}
-
-// fetch paragraphs from backend.json
-async function loadParagraphFromBackend() {
-  try {
-    const res = await fetch("./assets/backend.json"); // adjust if path differs
-    const data = await res.json();
-
-    if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
-      console.error("No paragraphs found in backend.json");
-      backendWords = [];
-      return;
-    }
-
-    const randomIndex = Math.floor(Math.random() * data.paragraphs.length);
-    const paragraph = data.paragraphs[randomIndex];
-
-    backendWords = paragraph.split(" ");
-  } catch (err) {
-    console.error("Error loading paragraph:", err);
-    backendWords = [];
-  }
-}
-
-export async function initTest() {
-  testConfiguration.classList.add("hide");
-  testResult.classList.remove("show");
-
-  testInfo.innerHTML = "";
-  testInfo.classList.remove("hide");
-
-  testContainer.classList.remove("shadow");
-  textOverlay.classList.add("hide");
-  startingTextContainer.classList.add("hide");
-
-  typingTest.classList.add("no-click");
-
-  testWords = backendWords;
-  createWords();
-}
-
-function createLetter(letter, parentContainer, i, j) {
-  const letterSpan = document.createElement("span");
-  letterSpan.innerText = letter;
-  letterSpan.className = "letter";
-  letterSpan.id = `${i}:${j}`;
-  parentContainer.appendChild(letterSpan);
-  testLetters.push(letterSpan);
-}
-
-function createWords() {
-  for (let i = 0; i < testWords.length; i++) {
-    const wordDiv = document.createElement("div");
-    wordDiv.id = i + 1;
-    wordDiv.className = "word";
-
-    [...testWords[i]].forEach((letter, j) => {
-      createLetter(letter, wordDiv, i + 1, j + 1);
-    });
-
-    if (i < testWords.length - 1) {
-      createLetter(" ", wordDiv, i + 1, testWords[i].length + 1);
-    }
-
-    testText.appendChild(wordDiv);
-  }
 }
 
 function createTestTypeInfo() {
@@ -283,16 +208,20 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   let minutes = parseInt(numberOfSeconds / 60);
   let seconds = numberOfSeconds % 60;
   seconds = seconds > 9 ? seconds : `0${seconds}`;
+
   return [minutes, seconds];
 }
 
 function reInitTest() {
   testText.innerHTML = "";
   testConfiguration.classList.remove("hide");
+
   testInfo.classList.add("hide");
+
   testContainer.classList.add("shadow");
   textOverlay.classList.remove("hide");
   startingTextContainer.classList.remove("hide");
+
   typingTest.classList.remove("no-click");
   currentIndex = 0;
   numberOfWords = 0;
@@ -300,8 +229,10 @@ function reInitTest() {
   resetTestWordsAndLetters();
   duration = 0;
   userInput.value = "";
+
   allowUserInput = false;
   userInputLetters = [];
   userInput.blur();
+
   testStarted = false;
 }
