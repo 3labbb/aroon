@@ -24,6 +24,10 @@ let numberOfWords = 0;
 let allowUserInput = true;
 let testStarted = false;
 
+// LIVE DISPLAY ELEMENTS
+const liveTimerEl = document.getElementById("liveTimer");
+const liveWPMEl = document.getElementById("liveWPM");
+
 startBtn.addEventListener("click", () => {
   if (!testStarted) {
     typingTest.click();
@@ -36,6 +40,7 @@ typingTest.addEventListener("click", () => {
   initTest();
   setUpUserInput();
   setDuration();
+
   testStarted = true;
   allowUserInput = true;
 });
@@ -46,6 +51,8 @@ userInput.addEventListener("input", startTest);
 function setUpUserInput() {
   userInput.focus();
   testLetters[currentIndex].classList.add("cursor");
+
+  resetLiveDisplays();
 
   if (testConfig["test-by"] === "words") {
     updateNumberOfWords();
@@ -59,6 +66,7 @@ function startTest() {
   if (currentIndex < testLetters.length - 1) {
     handleUserInput(this);
     updateNumberOfWords();
+    updateLiveWPM();
 
     if (testConfig["test-by"] === "words") {
       testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
@@ -67,6 +75,7 @@ function startTest() {
     clearInterval(timer);
     showResult();
   }
+
   handleCursor();
 }
 
@@ -77,40 +86,16 @@ function handleUserInput(input) {
 
   if (userCurrentLetter !== undefined) {
     if (userCurrentLetter === testCurrentLetter) {
-      correctLetter();
+      testLetters[currentIndex].classList.add("correct");
     } else {
-      wrongLetter();
+      testLetters[currentIndex].classList.add("wrong");
+      wrongLetters.push(testLetters[currentIndex].id);
     }
     currentIndex++;
   } else {
     currentIndex--;
     testLetters[currentIndex].className = "letter";
   }
-}
-
-function correctLetter() {
-  if (!wrongLetters.includes(testLetters[currentIndex].id)) {
-    testLetters[currentIndex].classList.add("correct");
-  } else {
-    if (testLetters[currentIndex].textContent !== " ") {
-      testLetters[currentIndex].classList.add("updated");
-    } else {
-      testLetters[currentIndex].classList.add("updated-space");
-    }
-  }
-}
-
-function wrongLetter() {
-  if (testLetters[currentIndex].textContent !== " ") {
-    if (!wrongLetters.includes(testLetters[currentIndex])) {
-      testLetters[currentIndex].classList.add("wrong");
-    } else {
-      testLetters[currentIndex].classList.add("updated");
-    }
-  } else {
-    testLetters[currentIndex].classList.add("wrong-space");
-  }
-  wrongLetters.push(testLetters[currentIndex].id);
 }
 
 function handleCursor() {
@@ -124,12 +109,10 @@ function updateNumberOfWords() {
 }
 
 function setDuration() {
-  // record start time
   startDuration = Date.now();
 }
 
 function stopDuration() {
-  // calculate elapsed seconds
   endDuration = Date.now();
   duration = Math.floor((endDuration - startDuration) / 1000);
 }
@@ -138,22 +121,19 @@ function showResult() {
   stopDuration();
 
   const [WPM, accuracy] = calculateUserTestResult();
-
-  // format elapsed time mm:ss
-  const formattedTime = formatElapsedTime(duration);
+  const finishedTime = formatElapsedTime(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
   accContainer.innerHTML = `${accuracy}%`;
-  timeInfoContainer.innerHTML = formattedTime;
+  timeInfoContainer.innerHTML = finishedTime;
 
   createTestTypeInfo();
   reInitTest();
   testResult.classList.add("show");
 }
 
-// Updated WPM calculation
+// UPDATED WPM CALCULATION (Correct chars ÷ 5 ÷ minutes)
 function calculateUserTestResult() {
-  // count correct characters
   let correctChars = 0;
   testLetters.forEach((elm) => {
     if (elm.classList.contains("correct")) {
@@ -162,13 +142,11 @@ function calculateUserTestResult() {
   });
 
   const minutes = duration / 60;
-  // standard WPM: (correct chars / 5) / minutes
   const wpm = minutes > 0 ? Math.floor((correctChars / 5) / minutes) : 0;
 
-  // accuracy: correct chars / total typed chars
-  const totalTyped = correctChars + wrongLetters.length;
-  const accuracy = totalTyped > 0
-    ? Math.floor((correctChars / totalTyped) * 100)
+  const totalCharsTyped = correctChars + wrongLetters.length;
+  const accuracy = totalCharsTyped > 0
+    ? Math.floor((correctChars / totalCharsTyped) * 100)
     : 0;
 
   return [wpm >= 0 ? wpm : 0, accuracy >= 0 ? accuracy : 0];
@@ -198,10 +176,16 @@ function createTestTypeInfo() {
   }
 }
 
+// Live Timer and WPM integration
 function setTimer(seconds) {
   timer = setInterval(() => {
-    let [numberOfMinutes, numberOfSeconds] = handleMinutesAndSeconds(seconds);
-    testInfo.innerHTML = `${numberOfMinutes}:${numberOfSeconds}`;
+    let [min, sec] = handleMinutesAndSeconds(seconds);
+    const timeStr = `${min}:${sec}`;
+
+    testInfo.innerHTML = timeStr;
+    liveTimerEl.innerText = timeStr;
+
+    updateLiveWPM();
 
     if (--seconds < 0) {
       clearInterval(timer);
@@ -217,11 +201,22 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   return [minutes, seconds];
 }
 
+function updateLiveWPM() {
+  const elapsed = Math.floor((Date.now() - startDuration) / 1000);
+  const [WPM] = calculateUserTestResult(elapsed);
+  liveWPMEl.innerText = `WPM: ${WPM}`;
+}
+
 function formatElapsedTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
+  const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
-  return `${minutes}:${formattedSecs}`;
+  return `${mins}:${formattedSecs}`;
+}
+
+function resetLiveDisplays() {
+  liveTimerEl.innerText = "00:00";
+  liveWPMEl.innerText = "WPM: 0";
 }
 
 function reInitTest() {
