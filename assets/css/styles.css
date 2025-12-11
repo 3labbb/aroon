@@ -1,0 +1,517 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100..700&display=swap');
+
+:root {
+    --background-color: #323437;
+    --text-color: #d1d0c5;
+    --text-alt-color: #646669;
+    --main-color: #e2b714;
+    --sub-color: #2c2e31;
+    --sub-alt-color: #646669;
+    --error-color: #da3333;
+    --spelter-color: #323437;
+    --roundness: .5rem;
+    --font: "Roboto Mono", "Vazirmatn", monospace;
+    scroll-padding-top: 2rem;
+    font-weight: 400;
+}
+
+.light-mode {
+    --background-color: #e1e1e3;
+    --text-color: #323437;
+    --text-alt-color: #aaaeb2;
+    --main-color: #e2b714;
+    --sub-color: #d1d3d9;
+    --sub-alt-color: #aaaeb2;
+    --error-color: #FA1616;
+    --spelter-color: #e1e1e3;
+}
+
+@font-face {
+    font-family: Lexend Deca;
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url(../font/LexendDeca-Regular.ttf) format("truetype")
+}
+
+*{
+    margin: 0;padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: var(--font);
+    min-height: 100vh;
+    transition: all .5s;
+    user-select: none;
+}
+
+.container {
+    height: 100vh;
+    width: 80%;
+    margin: 0 auto;
+    padding: 30px;
+    display: grid;
+    grid-template-rows: 50px 1fr 100px;
+    gap: 20px;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header .logo {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+header .logo img {
+    width: 40px;
+    height: 24px;
+    color: var(--main-color);
+}
+
+header .logo h1 {
+    font-size: 1.9rem;
+    margin-top: -8px;
+    position: relative;
+    font-family: Lexend Deca, sans-serif;
+    font-weight: 550;
+}
+
+
+nav{
+    font-size: 1rem;
+    line-height: 1rem;
+    color: var(--sub-alt-color);
+    display: grid;
+    grid-auto-flow: column;
+    gap: 1.5rem;
+    width: -moz-fit-content;
+    width: fit-content;
+    width: 100%;
+    grid-template-columns: auto auto auto auto 1fr auto;
+    margin-left: .7rem;
+    transition: all .8s;
+    cursor: pointer;
+}
+
+nav i:hover {
+color: var(--text-color);
+transition: all .8s;
+}
+
+footer {
+    position: relative;
+    text-align: center;
+    line-height: 1rem;
+    font-size: .75rem;
+    color: var(--sub-alt-color);
+    margin: -.5em
+}
+
+footer .keyTips {
+    transition: .125s;
+    margin-bottom: 2em;
+    line-height: 2
+}
+
+footer .keyTips key {
+    margin: 0 .25rem
+}
+
+footer #commandLineMobileButton {
+    display: none;
+    top: -4rem;
+    left: 0;
+    position: absolute;
+    font-size: 1rem;
+    width: 3rem;
+    height: 3rem;
+    text-align: center;
+    line-height: 3rem;
+    background: var(--main-color);
+    border-radius: 99rem;
+    z-index: 99;
+    cursor: pointer;
+    color: var(--background-color);
+    transition: .25s
+}
+
+footer .leftright {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    display: grid;
+    grid-template-columns: auto auto
+}
+
+footer .leftright .textButton {
+    text-decoration: none;
+    font-size: .75rem;
+    line-height: 1rem;
+    padding: .25em .5em
+}
+
+footer .leftright .left {
+    text-align: left;
+    display: grid;
+    grid-auto-flow: column;
+    width: -moz-fit-content;
+    width: fit-content
+}
+
+footer .leftright .right {
+    text-align: right;
+    display: grid;
+    grid-auto-flow: column;
+    width: -moz-fit-content;
+    width: fit-content;
+    justify-self: right
+}
+
+footer .leftright .left .textButton,
+footer .leftright .right .textButton {
+    display: grid;
+    grid-auto-flow: column;
+    gap: .25rem;
+    align-items: baseline;
+    width: -moz-available;
+    width: -moz-max-content;
+    width: max-content
+}
+
+footer .leftright .left .textButton:hover,
+footer .leftright .right .textButton:hover {
+    color: var(--text-color);
+}
+
+footer .currentVersion {
+    display: flex
+}
+
+footer .currentVersion #newVersionIndicator {
+    margin: 0;
+    font-size: unset;
+    background-color: var(--main-color);
+    border-radius: calc(var(--roundness)/2);
+    color: var(--background-color);
+    text-align: center;
+    cursor: pointer;
+    transition: .125s
+}
+
+footer.focus .keyTips {
+    opacity: 0 !important
+}
+
+footer.focus .textButton {
+    opacity: 0 !important
+}
+
+footer.focus #newVersionIndicator {
+    opacity: 0 !important
+}
+
+footer.focus #commandLineMobileButton {
+    opacity: 0 !important;
+    pointer-events: none !important
+}
+
+footer a{
+    background-color: transparent;
+    text-decoration: none;
+    color: var(--sub-alt-color);
+}
+
+key {
+    color: var(--background-color);
+    background-color: var(--sub-alt-color);
+    padding: .1rem .3rem;
+    margin: 0 .5rem;
+    border-radius: .1rem;
+    display: inline-block;
+    font-size: .7rem;
+    line-height: .7rem
+}
+
+.textButton {
+    color: var(--sub-alt-color);
+    cursor: pointer;
+    transition: background .125s, color .125s, opacity .125s;
+    padding: .5em;
+    border-radius: var(--roundness);
+    background: 0 0;
+    text-align: center;
+    user-select: none;
+    align-content: center;
+    height: -moz-min-content;
+    height: min-content;
+    line-height: 1.25;
+    border: none;
+    font-family: inherit;
+    font-size: 1em;
+    display: inline-flex;
+    gap: .5em;
+    align-items: baseline;
+    justify-content: center;
+    transition: all .8s;
+}
+
+.textButton:hover{
+    color: var(--text-color);
+    transition: all .8s;
+}
+
+main {
+    display: grid;
+    grid-template-rows: minmax(150px, auto) 30px 1fr;
+}
+
+main .test-config {
+    background-color: var(--sub-color);
+    display: flex;
+    font-size: 12px;
+    width: 800px;
+    margin: 20px auto 0;
+    padding: 10px;
+    border-radius: 6px;
+    color: var(--text-alt-color);
+}
+
+main .test-config.hide {
+    display: none;
+}
+
+main .test-config .config {
+    display: flex;
+    flex-basis: auto;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 10px;
+    margin-left: .65rem;
+}
+
+main .test-config .config .button {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+main .test-config .spelter {
+    width: 4px;
+    height: 20px;
+    margin: 0 10px;
+    background-color: var(--spelter-color);
+}
+
+main .test-config .config input {
+    appearance: none;
+}
+
+main .test-config .config label {
+    cursor: pointer;
+    transition: all .3s;
+}
+
+main .test-config .config label:hover {
+    color: var(--text-color);
+}
+
+main .test-config .config input:checked+label {
+    color: var(--main-color);
+}
+
+main .time-word-config.time label::after {
+    content: 's';
+}
+
+#tools{
+    margin-left: 20px;
+}
+
+main .test-results {
+    margin: 20px auto 30px;
+    width: 420px;
+    display: none;
+}
+
+main .test-results.show {
+    display: flex;
+    justify-content: space-between;
+}
+
+main .test-results .result {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+main .test-results .result .result-value {
+    color: var(--main-color);
+}
+
+main .test-results .result .result-head {
+    font-size: 16px;
+}
+
+main .test-results .result.big-text .result-head {
+    font-size: 28px;
+}
+
+main .test-results .result.big-text .result-value {
+    font-size: 48px;
+}
+
+main .test-results .test-type {
+    display: flex;
+    flex-direction: column;
+}
+
+main .typing-test {
+    font-size: 24px;
+    color: var(--text-alt-color);
+}
+
+#testModesNotice {
+    display: flex;
+    height: 10px;
+    flex-wrap: wrap;
+    color: var(--sub-color);
+    text-align: center;
+    transition: opacity .125s;
+    justify-content: center;
+    -webkit-user-select: none;
+    user-select: none;
+
+}
+main .typing-test .time-word-info {
+    color: var(--main-color);
+    margin-bottom: 10px;
+    min-height: 32px;
+}
+
+main .typing-test .test {
+    position: relative;
+}
+
+main .typing-test .test-text {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    user-select: none;
+}
+
+main .typing-test .test .word {
+    display: flex;
+}
+
+main .typing-test .test .letter {
+    min-width: 1ch;
+    display: inline-block;
+    border-left: 2px solid transparent;
+}
+
+main .typing-test .test .letter.last {
+    min-width: 1ch;
+    display: inline-block;
+    border: none;
+    margin-left: 2px;
+    border-right: 2px solid transparent;
+}
+
+main .typing-test .test.shadow {
+    color: transparent;
+    text-shadow: 0 0 5px rgb(100, 102, 105, 0.5);
+}
+
+main .typing-test .test .letter.cursor {
+    border-color: var(--main-color);
+    animation: blinker 1s linear infinite;
+}
+
+
+main .typing-test .test .letter.correct {
+    color: var(--text-color);
+}
+
+main .typing-test .test .letter.wrong {
+    color: var(--error-color);
+}
+
+main .typing-test .test .letter.wrong-space {
+    background-color: var(--error-color);
+}
+
+main .typing-test .test .letter.updated {
+    color: var(--main-color);
+}
+
+main .typing-test .test .letter.updated-space {
+    background-color: var(--main-color);
+}
+
+main .typing-test .test .overlay {
+    color: var(--text-color);
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    z-index: 1;
+    font-size: 18px;
+}
+
+main .typing-test .test .overlay.hide {
+    display: none;
+}
+
+#restartTestButton {
+    margin: 1rem auto 0;
+    display: flex;
+    padding: 1em 2em;
+    border: none;
+    background-color: var(--background-color);
+    color: var(--sub-alt-color);
+    transition: none;
+}
+
+#restartTestButton i{
+    cursor: pointer;
+}
+
+.hide {
+    display: none;
+}
+
+#userInput {
+    opacity: 0;
+    position: absolute;
+    z-index: -100;
+}
+
+.no-click {
+    pointer-events: none;
+}
+
+@keyframes blinker {
+    50% {
+        border-color: transparent;
+    }
+}
+
+@media (max-width:991px) {
+    .container {
+        width: 95%;
+        padding: 10px;
+    }
+}
