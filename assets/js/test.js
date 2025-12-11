@@ -11,11 +11,9 @@ window.addEventListener("DOMContentLoaded", setUpTestConfigurationContainer);
 
 function handleTestConfigChange(e) {
   const { name, value } = e.target;
-
   if (name === "test-by") {
     testConfig = { ...testConfig, [name]: value };
   }
-
   if (name === "time-word-config") {
     testConfig = { ...testConfig, [name]: parseInt(value) };
   }
@@ -32,19 +30,18 @@ function handleTestConfigChange(e) {
 
     testConfig = { ...testConfig, [name]: checkedBoxesValue };
   }
-
   setUpTestConfigurationContainer();
 }
 
 function setUpTestConfigurationContainer() {
   const timeWordConfigs = document.querySelectorAll(".time-word-config");
-
   if (testConfig["test-by"] === "time") {
     timeWordConfigs.forEach((elm) => elm.classList.add("time"));
   } else {
     timeWordConfigs.forEach((elm) => elm.classList.remove("time"));
   }
 }
+
 
 const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
@@ -57,7 +54,14 @@ const testInfo = document.querySelector(".time-word-info");
 export let testLetters = [];
 let testWords = [];
 
-export async function initTest() {
+// Example paragraphs (replace with backend fetch if desired)
+const paragraphs = [
+  "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is commonly used as a typing exercise.",
+  "Practice makes perfect. The more you type, the faster and more accurately you will become. Take your time and focus on each word.",
+  "Typing accurately is more important than typing quickly. Speed will come naturally as your fingers learn the patterns and your brain adjusts."
+];
+
+export function initTest() {
   testConfiguration.classList.add("hide");
   testResult.classList.remove("show");
 
@@ -69,44 +73,27 @@ export async function initTest() {
   startingTextContainer.classList.add("hide");
 
   typingTest.classList.add("no-click");
-
-  // Load paragraph text from the backend
-  testWords = await generateTestParagraph();
+  
+  testWords = generateTestParagraph();
   createWords();
 }
 
-async function fetchParagraphs() {
-  try {
-    const res = await fetch("./assets/backend.json"); // adjust path if needed
-    const data = await res.json();
-
-    if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
-      console.error("No paragraphs found in backend.json");
-      return [];
-    }
-
-    return data.paragraphs;
-  } catch (err) {
-    console.error("Error loading paragraphs:", err);
-    return [];
-  }
-}
-
-async function generateTestParagraph() {
+function generateTestParagraph() {
   const includeToTest = testConfig["include-to-test"];
-  const paragraphs = await fetchParagraphs();
-  if (paragraphs.length === 0) return [];
 
+  // Select a random paragraph
   let text = paragraphs[Math.floor(Math.random() * paragraphs.length)];
 
+  // Optionally add sentence variants
   if (includeToTest.includes("numbers")) {
-    text += " The year is 2025, and typing skills are essential.";
+    text += " The year is 2025 and typing skills are more useful than ever.";
   }
 
   if (includeToTest.includes("punctuation")) {
-    text += " Try handling commas, periods, and question marks correctly!";
+    text += " Can you handle punctuation like commas, periods, and question marks?";
   }
 
+  // Split into words
   return text.split(" ");
 }
 
@@ -140,7 +127,7 @@ function createWords() {
 function decideNumberOfWords() {
   return testConfig["test-by"] === "words"
     ? testConfig["time-word-config"]
-    : testWords.length;
+    : paragraphs.join(" ").split(" ").length;
 }
 
 export function resetTestWordsAndLetters() {
