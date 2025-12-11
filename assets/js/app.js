@@ -10,9 +10,6 @@ const testConfiguration = document.querySelector(".test-config");
 const startingTextContainer = document.querySelector(".starting-text");
 const textOverlay = document.querySelector(".overlay");
 const wordPerMinuteContainer = document.querySelector(".wpm");
-const liveWpmContainer = document.createElement("span"); // live WPM UI
-liveWpmContainer.className = "live-wpm";
-testInfo.appendChild(liveWpmContainer);
 const accContainer = document.querySelector(".acc");
 const testTypeResultInfo = document.querySelector(".test-type");
 const timeInfoContainer = document.querySelector(".time");
@@ -39,6 +36,7 @@ typingTest.addEventListener("click", () => {
   initTest();
   setUpUserInput();
   setDuration();
+
   testStarted = true;
   allowUserInput = true;
 });
@@ -62,7 +60,6 @@ function startTest() {
   if (currentIndex < testLetters.length - 1) {
     handleUserInput(this);
     updateNumberOfWords();
-    updateLiveWPM(); // live update
 
     if (testConfig["test-by"] === "words") {
       testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
@@ -96,19 +93,25 @@ function correctLetter() {
   if (!wrongLetters.includes(testLetters[currentIndex].id)) {
     testLetters[currentIndex].classList.add("correct");
   } else {
-    testLetters[currentIndex].classList.add(testLetters[currentIndex].textContent !== " " ? "updated" : "updated-space");
+    if (testLetters[currentIndex].textContent !== " ") {
+      testLetters[currentIndex].classList.add("updated");
+    } else {
+      testLetters[currentIndex].classList.add("updated-space");
+    }
   }
 }
 
 function wrongLetter() {
-  testLetters[currentIndex].classList.add(testLetters[currentIndex].textContent !== " " ? "wrong" : "wrong-space");
+  if (testLetters[currentIndex].textContent !== " ") {
+    if (!wrongLetters.includes(testLetters[currentIndex])) {
+      testLetters[currentIndex].classList.add("wrong");
+    } else {
+      testLetters[currentIndex].classList.add("updated");
+    }
+  } else {
+    testLetters[currentIndex].classList.add("wrong-space");
+  }
   wrongLetters.push(testLetters[currentIndex].id);
-}
-
-// new live WPM update
-function updateLiveWPM() {
-  const [WPM] = calculateUserTestResult(true); // pass live flag
-  liveWpmContainer.innerHTML = `Live WPM: ${WPM}`;
 }
 
 function handleCursor() {
@@ -122,53 +125,48 @@ function updateNumberOfWords() {
 }
 
 function setDuration() {
+  // store the precise start time
   startDuration = Date.now();
 }
 
 function stopDuration() {
+  // calculate total elapsed time in seconds
   endDuration = Date.now();
-  duration = parseInt((endDuration - startDuration) / 1000);
+  duration = Math.floor((endDuration - startDuration) / 1000);
 }
 
 function showResult() {
   stopDuration();
+
   const [WPM, accuracy] = calculateUserTestResult();
-  const [minutes, seconds] = handleMinutesAndSeconds(duration);
+
+  // properly formatted finished time
+  const formattedTime = formatElapsedTime(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
   accContainer.innerHTML = `${accuracy}%`;
-  timeInfoContainer.innerHTML = `${minutes}:${seconds}`;
+  timeInfoContainer.innerHTML = formattedTime;
 
-  liveWpmContainer.innerHTML = ""; // clear live WPM
   createTestTypeInfo();
   reInitTest();
   testResult.classList.add("show");
 }
 
-// updated to optionally calculate live (uses correct characters)
-function calculateUserTestResult(isLive = false) {
-  let correctChars = 0;
-  for (let i = 0; i < testLetters.length; i++) {
-    if (testLetters[i].classList.contains("correct")) {
-      correctChars++;
-    }
-  }
+function calculateUserTestResult() {
+  const avgEnglishWordLength = 5;
+  const numberOfWrongWords = wrongLetters.length / avgEnglishWordLength;
+  const numberOfCorrectWords = numberOfWords - Math.ceil(numberOfWrongWords);
+  const acc = Math.floor((numberOfCorrectWords / numberOfWords) * 100);
+  const wpm = Math.floor(numberOfCorrectWords / (duration / 60));
 
-  const elapsedSecs = isLive ? (Date.now() - startDuration) / 1000 : duration;
-  const minutes = elapsedSecs / 60;
-  const rawWPM = minutes > 0 ? (correctChars / 5) / minutes : 0;
-  const WPM = Math.floor(rawWPM);
-
-  const totalCharsTyped = correctChars + wrongLetters.length;
-  const accuracy = totalCharsTyped > 0
-    ? Math.floor((correctChars / totalCharsTyped) * 100)
-    : 0;
-
-  return [WPM >= 0 ? WPM : 0, accuracy >= 0 ? accuracy : 0];
+  const WPM = wpm >= 0 ? wpm : 0;
+  const accuracy = acc >= 0 ? acc : 0;
+  return [WPM, accuracy];
 }
 
 function createTestTypeInfo() {
   testTypeResultInfo.innerHTML = "";
+
   const testBySpan = document.createElement("span");
   testBySpan.innerHTML = `test by ${testConfig["test-by"]}`;
   testTypeResultInfo.appendChild(testBySpan);
@@ -195,8 +193,6 @@ function setTimer(seconds) {
     let [numberOfMinutes, numberOfSeconds] = handleMinutesAndSeconds(seconds);
     testInfo.innerHTML = `${numberOfMinutes}:${numberOfSeconds}`;
 
-    updateLiveWPM(); // live update during countdown
-
     if (--seconds < 0) {
       clearInterval(timer);
       showResult();
@@ -211,13 +207,24 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   return [minutes, seconds];
 }
 
+// helper to format finished time
+function formatElapsedTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
+  return `${minutes}:${formattedSecs}`;
+}
+
 function reInitTest() {
   testText.innerHTML = "";
   testConfiguration.classList.remove("hide");
+
   testInfo.classList.add("hide");
+
   testContainer.classList.add("shadow");
   textOverlay.classList.remove("hide");
   startingTextContainer.classList.remove("hide");
+
   typingTest.classList.remove("no-click");
   currentIndex = 0;
   numberOfWords = 0;
@@ -225,8 +232,10 @@ function reInitTest() {
   resetTestWordsAndLetters();
   duration = 0;
   userInput.value = "";
+
   allowUserInput = false;
   userInputLetters = [];
   userInput.blur();
+
   testStarted = false;
 }
