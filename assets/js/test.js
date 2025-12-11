@@ -42,6 +42,7 @@ function setUpTestConfigurationContainer() {
   }
 }
 
+
 const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
 const testText = document.querySelector(".test-text");
@@ -50,8 +51,10 @@ const startingTextContainer = document.querySelector(".starting-text");
 const testResult = document.querySelector(".test-results");
 const testInfo = document.querySelector(".time-word-info");
 
-export let testLetters = [];
+const punctuation = `+",.-'"&!?:;#~=/$^()_<>`;
+const letters = "abcdefghijklmnopqrstuvwxyz";
 let testWords = [];
+export let testLetters = [];
 
 export async function initTest() {
   testConfiguration.classList.add("hide");
@@ -65,7 +68,8 @@ export async function initTest() {
   startingTextContainer.classList.add("hide");
 
   typingTest.classList.add("no-click");
-
+  testWords = generateTestText();
+  
   // 🔽 Load paragraph text from the backend
   testWords = await generateTestParagraph();
 
