@@ -1,4 +1,4 @@
-import { initTest, resetTestWordsAndLetters, testLetters, testConfig } from "./test.js";
+import { resetTestWordsAndLetters, testLetters, testConfig } from "./test.js";
 
 const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
@@ -23,101 +23,43 @@ let startDuration, endDuration, duration;
 let numberOfWords = 0;
 let allowUserInput = true;
 let testStarted = false;
-let testParagraphWords = []; // paragraph words
+
+// hold the paragraph from backend
+let backendWords = [];
 
 startBtn.addEventListener("click", () => {
   if (!testStarted) {
-    typingTest.click();
+    textOverlay.click();
   }
   testStarted = true;
   allowUserInput = true;
+});
+
+// start test when clicking overlay or typing area
+textOverlay.addEventListener("click", async () => {
+  if (!testStarted) {
+    await loadParagraphFromBackend();
+    startTypingTest();
+  }
 });
 
 typingTest.addEventListener("click", async () => {
-  // load paragraph from backend
-  await loadParagraphFromBackend();
+  if (!testStarted) {
+    await loadParagraphFromBackend();
+    startTypingTest();
+  }
+});
 
+function startTypingTest() {
   initTest();
   setUpUserInput();
   setDuration();
-
   testStarted = true;
   allowUserInput = true;
-});
+}
 
 userInput.addEventListener("blur", () => allowUserInput && userInput.focus());
 userInput.addEventListener("input", startTest);
-
-async function loadParagraphFromBackend() {
-  try {
-    const res = await fetch("./assets/backend.json");
-    const data = await res.json();
-
-    if (!data.paragraphs || !Array.isArray(data.paragraphs) || data.paragraphs.length === 0) {
-      console.error("No paragraphs found in backend.json");
-      testParagraphWords = [];
-      return;
-    }
-
-    // pick a random paragraph
-    const randomIndex = Math.floor(Math.random() * data.paragraphs.length);
-    const paragraphText = data.paragraphs[randomIndex];
-
-    testParagraphWords = paragraphText.split(" ");
-  } catch (err) {
-    console.error("Error loading paragraph:", err);
-    testParagraphWords = [];
-  }
-}
-
-function initTest() {
-  testConfiguration.classList.add("hide");
-  testResult.classList.remove("show");
-
-  testInfo.innerHTML = "";
-  testInfo.classList.remove("hide");
-
-  testContainer.classList.remove("shadow");
-  textOverlay.classList.add("hide");
-  startingTextContainer.classList.add("hide");
-
-  typingTest.classList.add("no-click");
-
-  // build the test from the loaded paragraph
-  createWordsFromParagraph();
-}
-
-function createWordsFromParagraph() {
-  testText.innerHTML = "";
-  resetTestWordsAndLetters();
-
-  testParagraphWords.forEach((word, i) => {
-    const wordDiv = document.createElement("div");
-    wordDiv.id = i + 1;
-    wordDiv.className = "word";
-
-    [...word].forEach((letter, j) => {
-      createLetter(letter, wordDiv, i + 1, j + 1);
-    });
-
-    if (i < testParagraphWords.length - 1) {
-      createLetter(" ", wordDiv, i + 1, word.length + 1);
-    }
-
-    testText.appendChild(wordDiv);
-  });
-}
-
-function createLetter(letter, parentContainer, i, j) {
-  const letterSpan = document.createElement("span");
-  letterSpan.innerText = letter;
-  letterSpan.className = "letter";
-  letterSpan.id = `${i}:${j}`;
-  parentContainer.appendChild(letterSpan);
-  testLetters.push(letterSpan);
-}
-
-// Remaining code below is your unchanged logic
 
 function setUpUserInput() {
   userInput.focus();
@@ -135,6 +77,7 @@ function startTest() {
   if (currentIndex < testLetters.length - 1) {
     handleUserInput(this);
     updateNumberOfWords();
+
     if (testConfig["test-by"] === "words") {
       testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
     }
@@ -204,18 +147,18 @@ function setDuration() {
 
 function stopDuration() {
   endDuration = Date.now();
-  duration = Math.floor((endDuration - startDuration) / 1000);
+  duration = parseInt((endDuration - startDuration) / 1000);
 }
 
 function showResult() {
   stopDuration();
 
   const [WPM, accuracy] = calculateUserTestResult();
-  const formattedTime = formatElapsedTime(duration);
+  const [minutes, seconds] = handleMinutesAndSeconds(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
   accContainer.innerHTML = `${accuracy}%`;
-  timeInfoContainer.innerHTML = formattedTime;
+  timeInfoContainer.innerHTML = `${minutes}:${seconds}`;
 
   createTestTypeInfo();
   reInitTest();
@@ -234,16 +177,85 @@ function calculateUserTestResult() {
   return [WPM, accuracy];
 }
 
+// fetch paragraphs from backend.json
+async function loadParagraphFromBackend() {
+  try {
+    const res = await fetch("./assets/backend.json"); // adjust if path differs
+    const data = await res.json();
+
+    if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
+      console.error("No paragraphs found in backend.json");
+      backendWords = [];
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * data.paragraphs.length);
+    const paragraph = data.paragraphs[randomIndex];
+
+    backendWords = paragraph.split(" ");
+  } catch (err) {
+    console.error("Error loading paragraph:", err);
+    backendWords = [];
+  }
+}
+
+export async function initTest() {
+  testConfiguration.classList.add("hide");
+  testResult.classList.remove("show");
+
+  testInfo.innerHTML = "";
+  testInfo.classList.remove("hide");
+
+  testContainer.classList.remove("shadow");
+  textOverlay.classList.add("hide");
+  startingTextContainer.classList.add("hide");
+
+  typingTest.classList.add("no-click");
+
+  testWords = backendWords;
+  createWords();
+}
+
+function createLetter(letter, parentContainer, i, j) {
+  const letterSpan = document.createElement("span");
+  letterSpan.innerText = letter;
+  letterSpan.className = "letter";
+  letterSpan.id = `${i}:${j}`;
+  parentContainer.appendChild(letterSpan);
+  testLetters.push(letterSpan);
+}
+
+function createWords() {
+  for (let i = 0; i < testWords.length; i++) {
+    const wordDiv = document.createElement("div");
+    wordDiv.id = i + 1;
+    wordDiv.className = "word";
+
+    [...testWords[i]].forEach((letter, j) => {
+      createLetter(letter, wordDiv, i + 1, j + 1);
+    });
+
+    if (i < testWords.length - 1) {
+      createLetter(" ", wordDiv, i + 1, testWords[i].length + 1);
+    }
+
+    testText.appendChild(wordDiv);
+  }
+}
+
 function createTestTypeInfo() {
   testTypeResultInfo.innerHTML = "";
+
   const testBySpan = document.createElement("span");
   testBySpan.innerHTML = `test by ${testConfig["test-by"]}`;
   testTypeResultInfo.appendChild(testBySpan);
+
   testConfig["include-to-test"].map((elm) => {
     const span = document.createElement("span");
     span.innerHTML = `include ${elm}`;
     testTypeResultInfo.appendChild(span);
   });
+
   if (testConfig["test-by"] === "words") {
     const numberOfWordsSpan = document.createElement("span");
     numberOfWordsSpan.innerHTML = `test of ${testConfig["time-word-config"]} words`;
@@ -259,6 +271,7 @@ function setTimer(seconds) {
   timer = setInterval(() => {
     let [numberOfMinutes, numberOfSeconds] = handleMinutesAndSeconds(seconds);
     testInfo.innerHTML = `${numberOfMinutes}:${numberOfSeconds}`;
+
     if (--seconds < 0) {
       clearInterval(timer);
       showResult();
@@ -271,13 +284,6 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   let seconds = numberOfSeconds % 60;
   seconds = seconds > 9 ? seconds : `0${seconds}`;
   return [minutes, seconds];
-}
-
-function formatElapsedTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
-  return `${minutes}:${formattedSecs}`;
 }
 
 function reInitTest() {
