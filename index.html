@@ -36,9 +36,8 @@
           <div><i class="fas fa-fw fa-bell"></i></div>
           <div><i class="fa-regular fa-user"></i></div>
         </nav>
-        <input type="text" name="user-input" id="userInput" />
+        <input type="text" name="user-input" id="userInput" value="" />
       </header>
-
       <main>
         <div class="test-config-result">
           <div class="test-config">
@@ -145,48 +144,38 @@
               <i class="fas fa-fw fa-tools"></i>
             </div>
           </div>
-
           <div class="test-results">
             <div class="col">
               <div class="result big-text">
-                <span class="result-head">WPM</span>
-                <span class="result-value wpm"></span>
+                <span class="result-head">Recommend!</span>
+                <span class="result-value wpm">43</span>
               </div>
 
               <div class="result big-text">
                 <span class="result-head">acc</span>
-                <span class="result-value acc"></span>
+                <span class="result-value acc">96%</span>
               </div>
             </div>
             <div class="col">
               <div class="result">
                 <span class="result-head">test type</span>
-                <span class="result-value test-type"></span>
+                <span class="result-value test-type"> </span>
               </div>
               <div class="result">
                 <span class="result-head">finished time</span>
-                <span class="result-value time"></span>
+                <span class="result-value time">0:15</span>
               </div>
             </div>
           </div>
         </div>
-
         <div id="testModesNotice">
           <div class="textButton" commands="languages">
-            <i class="fas fa-globe-americas"></i>
+            <i class="fas fa-globe-americas"> </i>
             english
           </div>
         </div>
-
         <div class="typing-test">
-          <!-- LIVE UPDATE AREA -->
-          <div class="time-word-info">
-            <!-- live timer -->
-            <span id="liveTimer">00:00</span>
-            <!-- space -->
-            <span id="liveWPM" style="margin-left: 15px;">WPM: 0</span>
-          </div>
-
+          <div class="time-word-info"></div>
           <div class="test shadow">
             <div class="overlay">
               <i class="fa-solid fa-arrow-pointer"></i>
@@ -200,9 +189,13 @@
             </div>
             <div class="test-text"></div>
           </div>
+          <!-- <button id="restartTestButton" class="text">
+            <i class="fas fa-fw fa-redo-alt"></i>
+          </button> -->
         </div>
       </main>
 
+      <!-- FOOTER -->
       <footer>
         <div id="commandLineMobileButton">
           <i class="fas fa-terminal"></i>
@@ -219,6 +212,47 @@
               <i class="fas fa-fw fa-envelope"></i>
               <div class="text">Contact</div>
             </button>
+            <button class="textButton">
+              <i class="fas fa-fw fa-donate"></i>
+              <div class="text">Support</div>
+            </button>
+            <a
+              href="https://github.com/monkeytypegame/monkeytype"
+              class="textButton"
+              target="_blank"
+            >
+              <i class="fas fa-fw fa-code"></i>
+              <div class="text">GitHub</div>
+            </a>
+            <a
+              href="https://www.discord.gg/monkeytype"
+              class="textButton"
+              target="_blank"
+            >
+              <i class="fab fa-fw fa-discord"></i>
+              <div class="text">Discord</div>
+            </a>
+            <a
+              href="https://twitter.com/monkeytypegame"
+              class="textButton"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i class="fab fa-fw fa-twitter"></i>
+              <div class="text">Twitter</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-file-contract"></i>
+              <div class="text">Terms</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-shield-alt"></i>
+              <div class="text">Security</div>
+            </a>
+            <a href="#" class="textButton" target="_blank">
+              <i class="fas fa-fw fa-lock"></i>
+              <div class="text">Privacy</div>
+            </a>
           </div>
           <div class="right">
             <button
@@ -229,11 +263,14 @@
               <i class="fas fa-fw fa-palette"></i>
               <div class="text" id="theme-text">serika dark</div>
             </button>
+            <button class="textButton">
+              <i class="fas fa-fw fa-code-branch"></i>
+              <div class="text">v24.9.0</div>
+            </button>
           </div>
         </div>
       </footer>
     </div>
-
     <script src="./assets/js/script.js"></script>
     <script src="./assets/js/app.js" type="module"></script>
     <script src="./assets/js/test.js" type="module"></script>
