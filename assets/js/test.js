@@ -56,30 +56,6 @@ const testInfo = document.querySelector(".time-word-info");
 
 export let testLetters = [];
 let testWords = [];
-let overlayClicked = false;
-
-// 🔹 FIXED OVERLAY CLICK
-// ensure overlay reliably registers clicks
-textOverlay.addEventListener("click", async () => {
-  if (!overlayClicked) {
-    overlayClicked = true;
-
-    // hide overlay *after* click
-    textOverlay.classList.add("hide");
-
-    // init test normally
-    await initTest();
-  }
-});
-
-// also make sure typingTest click still triggers if needed
-typingTest.addEventListener("click", async () => {
-  if (!overlayClicked) {
-    overlayClicked = true;
-    textOverlay.classList.add("hide");
-    await initTest();
-  }
-});
 
 export async function initTest() {
   testConfiguration.classList.add("hide");
@@ -89,6 +65,7 @@ export async function initTest() {
   testInfo.classList.remove("hide");
 
   testContainer.classList.remove("shadow");
+  textOverlay.classList.add("hide");
   startingTextContainer.classList.add("hide");
 
   typingTest.classList.add("no-click");
