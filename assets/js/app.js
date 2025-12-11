@@ -15,31 +15,29 @@ const testTypeResultInfo = document.querySelector(".test-type");
 const timeInfoContainer = document.querySelector(".time");
 const startBtn = document.getElementById("startBtn");
 
-let currentIndex = 0;
-let userInputLetters = [];
-let wrongLetters = [];
-let timer;
-let startDuration, endDuration, duration;
-let numberOfWords = 0;
-let allowUserInput = true;
-let testStarted = false;
-
 // LIVE DISPLAY ELEMENTS
 const liveTimerEl = document.getElementById("liveTimer");
 const liveWPMEl = document.getElementById("liveWPM");
 
+let currentIndex = 0;
+let userInputLetters = [];
+let wrongLetters = [];
+let testTimer; // interval for live
+let startTime; // precise start timestamp
+let numberOfWords = 0;
+let allowUserInput = true;
+let testStarted = false;
+
 startBtn.addEventListener("click", () => {
-  if (!testStarted) {
-    typingTest.click();
-  }
+  if (!testStarted) typingTest.click();
   testStarted = true;
   allowUserInput = true;
 });
 
 typingTest.addEventListener("click", () => {
+  resetLiveDisplays();
   initTest();
-  setUpUserInput();
-  setDuration();
+  setStartTime();
 
   testStarted = true;
   allowUserInput = true;
@@ -48,18 +46,17 @@ typingTest.addEventListener("click", () => {
 userInput.addEventListener("blur", () => allowUserInput && userInput.focus());
 userInput.addEventListener("input", startTest);
 
-function setUpUserInput() {
-  userInput.focus();
-  testLetters[currentIndex].classList.add("cursor");
+function setStartTime() {
+  startTime = Date.now();
+  // start a 1Hz live update loop
+  clearInterval(testTimer);
+  testTimer = setInterval(updateLiveDisplays, 1000);
+}
 
-  resetLiveDisplays();
-
-  if (testConfig["test-by"] === "words") {
-    updateNumberOfWords();
-    testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
-  } else {
-    setTimer(testConfig["time-word-config"]);
-  }
+function updateLiveDisplays() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  liveTimerEl.innerText = formatElapsedTime(elapsed);
+  updateLiveWPM(elapsed);
 }
 
 function startTest() {
@@ -67,25 +64,19 @@ function startTest() {
     handleUserInput(this);
     updateNumberOfWords();
     updateLiveWPM();
-
-    if (testConfig["test-by"] === "words") {
-      testInfo.innerHTML = `${numberOfWords} / ${testConfig["time-word-config"]}`;
-    }
   } else {
-    clearInterval(timer);
-    showResult();
+    finishTest();
   }
-
   handleCursor();
 }
 
 function handleUserInput(input) {
   userInputLetters = input.value.split("");
-  const userCurrentLetter = userInputLetters[currentIndex];
-  const testCurrentLetter = testLetters[currentIndex].textContent;
+  const userCurrent = userInputLetters[currentIndex];
+  const testCurrent = testLetters[currentIndex].textContent;
 
-  if (userCurrentLetter !== undefined) {
-    if (userCurrentLetter === testCurrentLetter) {
+  if (userCurrent !== undefined) {
+    if (userCurrent === testCurrent) {
       testLetters[currentIndex].classList.add("correct");
     } else {
       testLetters[currentIndex].classList.add("wrong");
@@ -99,7 +90,7 @@ function handleUserInput(input) {
 }
 
 function handleCursor() {
-  testLetters.map((elm) => elm.classList.remove("cursor"));
+  testLetters.forEach((elm) => elm.classList.remove("cursor"));
   testLetters[currentIndex]?.classList.add("cursor");
 }
 
@@ -108,45 +99,38 @@ function updateNumberOfWords() {
   numberOfWords = parseInt(currentWordNumber) - 1;
 }
 
-function setDuration() {
-  startDuration = Date.now();
-}
-
-function stopDuration() {
-  endDuration = Date.now();
-  duration = Math.floor((endDuration - startDuration) / 1000);
+// STOP and SHOW RESULTS
+function finishTest() {
+  clearInterval(testTimer);
+  showResult();
 }
 
 function showResult() {
-  stopDuration();
-
-  const [WPM, accuracy] = calculateUserTestResult();
-  const finishedTime = formatElapsedTime(duration);
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const [WPM, accuracy] = calculateUserTestResult(elapsed);
 
   wordPerMinuteContainer.innerHTML = WPM;
   accContainer.innerHTML = `${accuracy}%`;
-  timeInfoContainer.innerHTML = finishedTime;
+  timeInfoContainer.innerHTML = formatElapsedTime(elapsed);
 
   createTestTypeInfo();
   reInitTest();
   testResult.classList.add("show");
 }
 
-// UPDATED WPM CALCULATION (Correct chars ÷ 5 ÷ minutes)
-function calculateUserTestResult() {
+// STANDARD WPM calculation
+function calculateUserTestResult(elapsedSecs) {
   let correctChars = 0;
   testLetters.forEach((elm) => {
-    if (elm.classList.contains("correct")) {
-      correctChars++;
-    }
+    if (elm.classList.contains("correct")) correctChars++;
   });
 
-  const minutes = duration / 60;
+  const minutes = elapsedSecs / 60;
   const wpm = minutes > 0 ? Math.floor((correctChars / 5) / minutes) : 0;
 
-  const totalCharsTyped = correctChars + wrongLetters.length;
-  const accuracy = totalCharsTyped > 0
-    ? Math.floor((correctChars / totalCharsTyped) * 100)
+  const total = correctChars + wrongLetters.length;
+  const accuracy = total > 0
+    ? Math.floor((correctChars / total) * 100)
     : 0;
 
   return [wpm >= 0 ? wpm : 0, accuracy >= 0 ? accuracy : 0];
@@ -176,42 +160,40 @@ function createTestTypeInfo() {
   }
 }
 
-// Live Timer and WPM integration
 function setTimer(seconds) {
-  timer = setInterval(() => {
-    let [min, sec] = handleMinutesAndSeconds(seconds);
-    const timeStr = `${min}:${sec}`;
+  let remain = seconds;
+  testTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const remaining = Math.max(0, seconds - elapsed);
+    const [min, sec] = handleMinutesAndSeconds(remaining);
+    testInfo.innerHTML = `${min}:${sec}`;
+    liveTimerEl.innerText = `${min}:${sec}`;
+    updateLiveWPM(elapsed);
 
-    testInfo.innerHTML = timeStr;
-    liveTimerEl.innerText = timeStr;
-
-    updateLiveWPM();
-
-    if (--seconds < 0) {
-      clearInterval(timer);
-      showResult();
-    }
+    if (remaining <= 0) finishTest();
   }, 1000);
 }
 
+function updateLiveWPM(elapsed = null) {
+  const elapsedSecs = elapsed !== null
+    ? elapsed
+    : Math.floor((Date.now() - startTime) / 1000);
+
+  const [WPM] = calculateUserTestResult(elapsedSecs);
+  liveWPMEl.innerText = `WPM: ${WPM}`;
+}
+
 function handleMinutesAndSeconds(numberOfSeconds) {
-  let minutes = parseInt(numberOfSeconds / 60);
+  let minutes = Math.floor(numberOfSeconds / 60);
   let seconds = numberOfSeconds % 60;
   seconds = seconds > 9 ? seconds : `0${seconds}`;
   return [minutes, seconds];
 }
 
-function updateLiveWPM() {
-  const elapsed = Math.floor((Date.now() - startDuration) / 1000);
-  const [WPM] = calculateUserTestResult(elapsed);
-  liveWPMEl.innerText = `WPM: ${WPM}`;
-}
-
 function formatElapsedTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
-  return `${mins}:${formattedSecs}`;
+  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 }
 
 function resetLiveDisplays() {
@@ -222,9 +204,7 @@ function resetLiveDisplays() {
 function reInitTest() {
   testText.innerHTML = "";
   testConfiguration.classList.remove("hide");
-
   testInfo.classList.add("hide");
-
   testContainer.classList.add("shadow");
   textOverlay.classList.remove("hide");
   startingTextContainer.classList.remove("hide");
@@ -234,12 +214,8 @@ function reInitTest() {
   numberOfWords = 0;
   wrongLetters = [];
   resetTestWordsAndLetters();
-  duration = 0;
   userInput.value = "";
-
   allowUserInput = false;
-  userInputLetters = [];
   userInput.blur();
-
   testStarted = false;
 }
