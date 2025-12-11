@@ -34,24 +34,27 @@ function handleTestConfigChange(e) {
 }
 
 function setUpTestConfigurationContainer() {
-  const timeWordConfigs = document.querySelectorAll(".time-word-config");
-  if (testConfig["test-by"] === "time") {
+  const timeWordConfigs = document.querySelectorAll(".time‑word‑config");
+  if (testConfig["test‑by"] === "time") {
     timeWordConfigs.forEach((elm) => elm.classList.add("time"));
   } else {
     timeWordConfigs.forEach((elm) => elm.classList.remove("time"));
   }
 }
 
-const typingTest = document.querySelector(".typing-test");
+const typingTest = document.querySelector(".typing‑test");
 const testContainer = document.querySelector(".test");
-const testText = document.querySelector(".test-text");
+const testText = document.querySelector(".test‑text");
 const textOverlay = document.querySelector(".overlay");
-const startingTextContainer = document.querySelector(".starting-text");
-const testResult = document.querySelector(".test-results");
-const testInfo = document.querySelector(".time-word-info");
+const startingTextContainer = document.querySelector(".starting‑text");
+const testResult = document.querySelector(".test‑results");
+const testInfo = document.querySelector(".time‑word‑info");
 
 export let testLetters = [];
 let testWords = [];
+
+// ➤ NEW: track when the test actually ends
+export let finishedTime = "00:00";
 
 export async function initTest() {
   testConfiguration.classList.add("hide");
@@ -64,12 +67,14 @@ export async function initTest() {
   textOverlay.classList.add("hide");
   startingTextContainer.classList.add("hide");
 
-  typingTest.classList.add("no-click");
+  typingTest.classList.add("no‑click");
 
-  // 🔽 Load paragraph text from the backend
+  // load paragraph text from the backend
   testWords = await generateTestParagraph();
-
   createWords();
+
+  // reset the finished time for the new test
+  finishedTime = "00:00";
 }
 
 async function fetchParagraphs() {
@@ -90,18 +95,14 @@ async function fetchParagraphs() {
 
 async function generateTestParagraph() {
   const includeToTest = testConfig["include-to-test"];
-
-  // Load paragraphs from backend
   const paragraphs = await fetchParagraphs();
   if (paragraphs.length === 0) return [];
 
-  // choose a random paragraph
   let text = paragraphs[Math.floor(Math.random() * paragraphs.length)];
 
   if (includeToTest.includes("numbers")) {
     text += " The year is 2025, and typing skills are essential.";
   }
-
   if (includeToTest.includes("punctuation")) {
     text += " Try handling commas, periods, and question marks correctly!";
   }
@@ -137,12 +138,20 @@ function createWords() {
 }
 
 function decideNumberOfWords() {
-  return testConfig["test-by"] === "words"
-    ? testConfig["time-word-config"]
+  return testConfig["test‑by"] === "words"
+    ? testConfig["time‑word‑config"]
     : testWords.length;
 }
 
 export function resetTestWordsAndLetters() {
   testWords = [];
   testLetters = [];
+}
+
+// ➤ NEW UTILITY — format elapsed time in mm:ss
+export function formatElapsedTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const paddedSecs = secs < 10 ? `0${secs}` : secs;
+  return `${mins}:${paddedSecs}`;
 }
