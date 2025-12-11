@@ -28,9 +28,7 @@ startBtn.addEventListener("click", () => {
   if (!testStarted) {
     typingTest.click();
   }
-
   testStarted = true;
-
   allowUserInput = true;
 });
 
@@ -44,12 +42,10 @@ typingTest.addEventListener("click", () => {
 });
 
 userInput.addEventListener("blur", () => allowUserInput && userInput.focus());
-
 userInput.addEventListener("input", startTest);
 
 function setUpUserInput() {
   userInput.focus();
-
   testLetters[currentIndex].classList.add("cursor");
 
   if (testConfig["test-by"] === "words") {
@@ -72,13 +68,11 @@ function startTest() {
     clearInterval(timer);
     showResult();
   }
-
   handleCursor();
 }
 
 function handleUserInput(input) {
   userInputLetters = input.value.split("");
-
   const userCurrentLetter = userInputLetters[currentIndex];
   const testCurrentLetter = testLetters[currentIndex].textContent;
 
@@ -117,7 +111,6 @@ function wrongLetter() {
   } else {
     testLetters[currentIndex].classList.add("wrong-space");
   }
-
   wrongLetters.push(testLetters[currentIndex].id);
 }
 
@@ -132,23 +125,27 @@ function updateNumberOfWords() {
 }
 
 function setDuration() {
+  // store the precise start time
   startDuration = Date.now();
 }
 
 function stopDuration() {
+  // calculate total elapsed time in seconds
   endDuration = Date.now();
-  duration = parseInt((endDuration - startDuration) / 1000);
+  duration = Math.floor((endDuration - startDuration) / 1000);
 }
 
 function showResult() {
   stopDuration();
 
   const [WPM, accuracy] = calculateUserTestResult();
-  const [minutes, seconds] = handleMinutesAndSeconds(duration);
+
+  // properly formatted finished time
+  const formattedTime = formatElapsedTime(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
   accContainer.innerHTML = `${accuracy}%`;
-  timeInfoContainer.innerHTML = `${minutes}:${seconds}`;
+  timeInfoContainer.innerHTML = formattedTime;
 
   createTestTypeInfo();
   reInitTest();
@@ -164,7 +161,6 @@ function calculateUserTestResult() {
 
   const WPM = wpm >= 0 ? wpm : 0;
   const accuracy = acc >= 0 ? acc : 0;
-
   return [WPM, accuracy];
 }
 
@@ -208,8 +204,15 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   let minutes = parseInt(numberOfSeconds / 60);
   let seconds = numberOfSeconds % 60;
   seconds = seconds > 9 ? seconds : `0${seconds}`;
-
   return [minutes, seconds];
+}
+
+// helper to format finished time
+function formatElapsedTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
+  return `${minutes}:${formattedSecs}`;
 }
 
 function reInitTest() {
