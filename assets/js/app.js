@@ -36,7 +36,6 @@ typingTest.addEventListener("click", () => {
   initTest();
   setUpUserInput();
   setDuration();
-
   testStarted = true;
   allowUserInput = true;
 });
@@ -125,12 +124,12 @@ function updateNumberOfWords() {
 }
 
 function setDuration() {
-  // store the precise start time
+  // record start time
   startDuration = Date.now();
 }
 
 function stopDuration() {
-  // calculate total elapsed time in seconds
+  // calculate elapsed seconds
   endDuration = Date.now();
   duration = Math.floor((endDuration - startDuration) / 1000);
 }
@@ -140,7 +139,7 @@ function showResult() {
 
   const [WPM, accuracy] = calculateUserTestResult();
 
-  // properly formatted finished time
+  // format elapsed time mm:ss
   const formattedTime = formatElapsedTime(duration);
 
   wordPerMinuteContainer.innerHTML = WPM;
@@ -152,16 +151,27 @@ function showResult() {
   testResult.classList.add("show");
 }
 
+// Updated WPM calculation
 function calculateUserTestResult() {
-  const avgEnglishWordLength = 5;
-  const numberOfWrongWords = wrongLetters.length / avgEnglishWordLength;
-  const numberOfCorrectWords = numberOfWords - Math.ceil(numberOfWrongWords);
-  const acc = Math.floor((numberOfCorrectWords / numberOfWords) * 100);
-  const wpm = Math.floor(numberOfCorrectWords / (duration / 60));
+  // count correct characters
+  let correctChars = 0;
+  testLetters.forEach((elm) => {
+    if (elm.classList.contains("correct")) {
+      correctChars++;
+    }
+  });
 
-  const WPM = wpm >= 0 ? wpm : 0;
-  const accuracy = acc >= 0 ? acc : 0;
-  return [WPM, accuracy];
+  const minutes = duration / 60;
+  // standard WPM: (correct chars / 5) / minutes
+  const wpm = minutes > 0 ? Math.floor((correctChars / 5) / minutes) : 0;
+
+  // accuracy: correct chars / total typed chars
+  const totalTyped = correctChars + wrongLetters.length;
+  const accuracy = totalTyped > 0
+    ? Math.floor((correctChars / totalTyped) * 100)
+    : 0;
+
+  return [wpm >= 0 ? wpm : 0, accuracy >= 0 ? accuracy : 0];
 }
 
 function createTestTypeInfo() {
@@ -207,7 +217,6 @@ function handleMinutesAndSeconds(numberOfSeconds) {
   return [minutes, seconds];
 }
 
-// helper to format finished time
 function formatElapsedTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
