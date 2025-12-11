@@ -56,32 +56,30 @@ const testInfo = document.querySelector(".time-word-info");
 
 export let testLetters = [];
 let testWords = [];
-let paragraphLoaded = false;
+let overlayClicked = false;
 
-// 👇 Allow clicking the overlay to start the test
+// 🔹 FIXED OVERLAY CLICK
+// ensure overlay reliably registers clicks
 textOverlay.addEventListener("click", async () => {
-  if (!paragraphLoaded) {
-    await initParagraphTest();
+  if (!overlayClicked) {
+    overlayClicked = true;
+
+    // hide overlay *after* click
+    textOverlay.classList.add("hide");
+
+    // init test normally
+    await initTest();
   }
 });
 
-// Also ensure clicking anywhere in the typing area starts the test
+// also make sure typingTest click still triggers if needed
 typingTest.addEventListener("click", async () => {
-  if (!paragraphLoaded) {
-    await initParagraphTest();
+  if (!overlayClicked) {
+    overlayClicked = true;
+    textOverlay.classList.add("hide");
+    await initTest();
   }
 });
-
-async function initParagraphTest() {
-  // mark loaded so it doesn’t run multiple times
-  paragraphLoaded = true;
-
-  // hide overlay immediately on click
-  textOverlay.classList.add("hide");
-
-  // run the real initTest logic
-  await initTest();
-}
 
 export async function initTest() {
   testConfiguration.classList.add("hide");
@@ -92,9 +90,10 @@ export async function initTest() {
 
   testContainer.classList.remove("shadow");
   startingTextContainer.classList.add("hide");
+
   typingTest.classList.add("no-click");
 
-  // Load paragraph from backend
+  // Load paragraph text from the backend
   testWords = await generateTestParagraph();
   createWords();
 }
