@@ -34,29 +34,29 @@ function handleTestConfigChange(e) {
 }
 
 function setUpTestConfigurationContainer() {
-  const timeWordConfigs = document.querySelectorAll(".time‑word‑config");
-  if (testConfig["test‑by"] === "time") {
+  const timeWordConfigs = document.querySelectorAll(".time-word-config");
+  if (testConfig["test-by"] === "time") {
     timeWordConfigs.forEach((elm) => elm.classList.add("time"));
   } else {
     timeWordConfigs.forEach((elm) => elm.classList.remove("time"));
   }
 }
 
-const typingTest = document.querySelector(".typing‑test");
+
+const typingTest = document.querySelector(".typing-test");
 const testContainer = document.querySelector(".test");
-const testText = document.querySelector(".test‑text");
+const testText = document.querySelector(".test-text");
 const textOverlay = document.querySelector(".overlay");
-const startingTextContainer = document.querySelector(".starting‑text");
-const testResult = document.querySelector(".test‑results");
-const testInfo = document.querySelector(".time‑word‑info");
+const startingTextContainer = document.querySelector(".starting-text");
+const testResult = document.querySelector(".test-results");
+const testInfo = document.querySelector(".time-word-info");
 
-export let testLetters = [];
+const punctuation = `+",.-'"&!?:;#~=/$^()_<>`;
+const letters = "abcdefghijklmnopqrstuvwxyz";
 let testWords = [];
+export let testLetters = [];
 
-// ➤ NEW: track when the test actually ends
-export let finishedTime = "00:00";
-
-export async function initTest() {
+export function initTest() {
   testConfiguration.classList.add("hide");
   testResult.classList.remove("show");
 
@@ -67,47 +67,45 @@ export async function initTest() {
   textOverlay.classList.add("hide");
   startingTextContainer.classList.add("hide");
 
-  typingTest.classList.add("no‑click");
+  typingTest.classList.add("no-click");
+  testWords = generateTestText();
 
-  // load paragraph text from the backend
-  testWords = await generateTestParagraph();
   createWords();
-
-  // reset the finished time for the new test
-  finishedTime = "00:00";
 }
 
-async function fetchParagraphs() {
-  try {
-    const res = await fetch("./assets/backend.json"); // adjust path if needed
-    const data = await res.json();
-
-    if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
-      console.error("No paragraphs found in backend.json");
-      return [];
-    }
-    return data.paragraphs;
-  } catch (err) {
-    console.error("Error loading paragraphs:", err);
-    return [];
-  }
-}
-
-async function generateTestParagraph() {
+function generateTestText() {
+  const numberOfWords = decideNumberOfWords();
   const includeToTest = testConfig["include-to-test"];
-  const paragraphs = await fetchParagraphs();
-  if (paragraphs.length === 0) return [];
+  const words = [];
 
-  let text = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+  for (let i = 0; i < numberOfWords; i++) {
+    let wordLength = random(8) + 1;
+    let word = "";
 
-  if (includeToTest.includes("numbers")) {
-    text += " The year is 2025, and typing skills are essential.";
+    for (let j = 0; j < wordLength; j++) {
+      let randomLetter = letters[random(letters.length)];
+      if (random(8) === 4) {
+        word += randomLetter.toLocaleUpperCase();
+      } else {
+        word += randomLetter;
+      }
+    }
+
+    if (includeToTest.includes("punctuation")) {
+      if (random(8) % 2 === 0) {
+        word += punctuation[random(punctuation.length)];
+      }
+    }
+
+    if (includeToTest.includes("numbers")) {
+      if (random(8) % 2 === 0) {
+        word += " " + random(10);
+      }
+    }
+
+    words.push(word);
   }
-  if (includeToTest.includes("punctuation")) {
-    text += " Try handling commas, periods, and question marks correctly!";
-  }
-
-  return text.split(" ");
+  return words;
 }
 
 function createLetter(letter, parentContainer, i, j) {
@@ -138,20 +136,16 @@ function createWords() {
 }
 
 function decideNumberOfWords() {
-  return testConfig["test‑by"] === "words"
-    ? testConfig["time‑word‑config"]
-    : testWords.length;
+  return testConfig["test-by"] === "words"
+    ? testConfig["time-word-config"]
+    : 40;
 }
 
-export function resetTestWordsAndLetters() {
+function random(limit) {
+  return Math.floor(Math.random() * limit);
+}
+
+export function resetTestWordsAndLetters(params) {
   testWords = [];
   testLetters = [];
-}
-
-// ➤ NEW UTILITY — format elapsed time in mm:ss
-export function formatElapsedTime(totalSeconds) {
-  const mins = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  const paddedSecs = secs < 10 ? `0${secs}` : secs;
-  return `${mins}:${paddedSecs}`;
 }
