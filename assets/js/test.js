@@ -74,7 +74,7 @@ export async function initTest() {
 
 async function fetchParagraphs() {
   try {
-    const res = await fetch("/backend.json"); // adjust path if needed
+    const res = await fetch("./assets/backend.json"); // adjust path if needed
     const data = await res.json();
 
     if (!data.paragraphs || !Array.isArray(data.paragraphs)) {
